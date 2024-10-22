@@ -27,17 +27,21 @@ Data {
 
 --Main recipe.
 local ingredients = {
-    {'constant-combinator', 1},
-    {'radar', 1},
-    {'roboport', 1}
+    {type = 'item', name = 'constant-combinator', amount = 1},
+    {type = 'item', name = 'radar', amount = 1},
+    {type = 'item', name = 'roboport', amount = 1}
 }
 
 Recipe {
     type = 'recipe',
     name = 'roboport-interface',
     enabled = false,
-    ingredients = ingredients,
-    result = 'roboport-interface',
+    ingredients = {
+        {type = 'item', name = 'constant-combinator', amount = 1},
+        {type = 'item', name = 'radar', amount = 1},
+        {type = 'item', name = 'roboport', amount = 1}
+    },
+    results = {{type = 'item', name='roboport-interface', amount = 1}},
     energy_required = 30
 }:add_unlock('roboport-interface')
 
@@ -59,7 +63,7 @@ Data {
     icon = '__Nanobots__/graphics/icons/roboport-interface-cc.png',
     icon_size = 64,
     icon_mipmaps = 1,
-    flags = {'hidden'},
+    hidden = true,
     subgroup = 'logistic-network',
     order = 'c[signal]-a[roboport]-interface-cc',
     place_result = 'roboport-interface-cc',
@@ -78,7 +82,7 @@ ri_cc.icon_mipmaps = 1
 ri_cc.icon_size = 64
 ri_cc.item_slot_count = 5
 ri_cc.flags = {'not-deconstructable', 'player-creation', 'placeable-off-grid'}
-ri_cc.collision_mask = {}
+ri_cc.collision_mask = {layers = {item = true, meltable = true, object = true, player = true, water_tile = true, is_object = true, is_lower_object = true}}
 ri_cc.minable = nil
 ri_cc.selection_box = {{0.0, 0.0}, {1, 1}}
 ri_cc.collision_box = {{-0.9, -0.9}, {0.9, 0.9}}
@@ -119,7 +123,7 @@ ri_radar.icon_size = 64
 ri_radar.icon_mipmaps = 1
 ri_radar.minable = nil
 ri_radar.next_upgrade = nil
-ri_radar.collision_mask = {}
+ri_radar.collision_mask = {layers = {item = true, meltable = true, object = true, player = true, water_tile = true, is_object = true, is_lower_object = true}}
 ri_radar.selection_box = {{-1, 0}, {0, 1}}
 ri_radar.collision_box = {{-0.9, -0.9}, {0.9, 0.9}}
 ri_radar.pictures = Data.Sprites.empty_pictures()
@@ -146,9 +150,9 @@ Data {
         type = 'electric',
         usage_priority = 'secondary-input',
         input_flow_limit = '50kW',
-        buffer_capacity = '500KJ'
+        buffer_capacity = '500kJ'
     },
-    recharge_minimum = '50KJ',
+    recharge_minimum = '50kJ',
     energy_usage = '25kW',
     -- per one charge slot
     charging_energy = '1kW',

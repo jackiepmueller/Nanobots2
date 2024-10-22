@@ -126,7 +126,7 @@ local function has_resources(miner)
 end
 
 Queue.deconstruct_finished_miners = function(data)
-    if not game.active_mods['AutoDeconstruct'] then
+    if not script.active_mods['AutoDeconstruct'] then
         if data.logistic_cell.valid and data.logistic_cell.construction_radius > 0 and data.logistic_cell.logistic_network then
             local surface, force, position = get_entity_info(data.logistic_cell.owner)
             local filter = {area = Position.expand_to_area(position, data.logistic_cell.construction_radius), type = data.find_type or 'error', force = force}
@@ -164,7 +164,7 @@ local function run_interface(interface)
             --game.print(serpent.block(parameters, {comment=false, sparse=false}))
             -- If the closest roboport signal is present and > 0 then just run on the attached cell
             local just_cell = (parameters['nano-signal-closest-roboport'] or 0) > 0 and logistic_cell and {logistic_cell} or nil
-            local fdata = global.forces[logistic_cell.owner.force.name]
+            local fdata = storage.forces[logistic_cell.owner.force.name]
             local next_tick = queue:next(fdata._next_cell_tick or game.tick, tick_spacing, true)
             for param_name, param_table in pairs(params_to_check) do
                 if (parameters[param_name] or 0) ~= 0 then
@@ -272,22 +272,22 @@ end
 Event.register(defines.events.on_sector_scanned, on_sector_scanned)
 
 local function on_init()
-    global.cell_queue = Queue()
-    queue = global.cell_queue
+    storage.cell_queue = Queue()
+    queue = storage.cell_queue
 end
 Event.register(Event.core_events.init, on_init)
 
 local function on_load()
-    queue = Queue(global.cell_queue)
+    queue = Queue(storage.cell_queue)
 end
 Event.register(Event.core_events.load, on_load)
 
 local function reset_cell_queue()
-    global.cell_queue = nil
+    storage.cell_queue = nil
     queue = nil
-    global.cell_queue = Queue()
-    queue = global.cell_queue
-    for _, fdata in pairs(global.forces) do
+    storage.cell_queue = Queue()
+    queue = storage.cell_queue
+    for _, fdata in pairs(storage.forces) do
         fdata._next_cell_tick = game and game.tick or 0
     end
 end

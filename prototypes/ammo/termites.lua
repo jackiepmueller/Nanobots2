@@ -8,8 +8,8 @@ local recipe = {
     enabled = false,
     energy_required = 5,
     ingredients = {
-        {'iron-stick', 1},
-        {'electronic-circuit', 1}
+        {type = 'item', name = 'iron-stick', amount = 1},
+        {type = 'item', name = 'electronic-circuit', amount = 1}
     },
     results = {
         {type = 'item', name = 'ammo-nano-termites', amount = 2}
@@ -26,6 +26,7 @@ local termites = {
     subgroup = 'tool',
     order = 'c[automated-construction]-g[gun-nano-emitter]-d-termites',
     stack_size = 100, --100
+    ammo_category = 'nano-ammo',
     ammo_type = {
         category = 'nano-ammo',
         target_type = 'position',

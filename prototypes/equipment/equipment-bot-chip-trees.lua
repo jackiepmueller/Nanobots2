@@ -7,11 +7,11 @@ Data {
     enabled = false,
     energy_required = 10,
     ingredients = {
-        {'processing-unit', 1},
-        {'battery', 1}
+        {type = 'item', name = 'processing-unit', amount = 1},
+        {type = 'item', name = 'battery', amount = 1}
         --bobmods add construction brain
     },
-    result = 'equipment-bot-chip-trees'
+    results = {{type = 'item', name='equipment-bot-chip-trees', amount = 1}}
 }
 
 Data {

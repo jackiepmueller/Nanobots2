@@ -42,7 +42,7 @@ function constants.cloud_animation(scale)
     scale = scale or .4
     return {
         filename = '__base__/graphics/entity/cloud/cloud-45-frames.png',
-        flags = {'compressed'},
+        --flags = {'compressed'},
         priority = 'low',
         width = 256,
         height = 256,

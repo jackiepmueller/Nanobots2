@@ -6,7 +6,7 @@ local table = require('__stdlib__/stdlib/utils/table')
 
 local config = require('config')
 
---TODO: Store this in global and update in on_con_changed
+--TODO: Store this in storage and update in on_con_changed
 --TODO: Remote call for inserting/removing into table
 local combat_robots = config.COMBAT_ROBOTS
 local healer_capsules = config.FOOD
@@ -93,8 +93,8 @@ end
 
 local function get_health_capsules(player)
     for name, health in pairs(healer_capsules) do
-        if game.item_prototypes[name] and player.remove_item({name = name, count = 1}) > 0 then
-            return max(health, 10), game.item_prototypes[name].localised_name or {'nanobots.free-food-unknown'}
+        if prototypes.item[name] and player.remove_item({name = name, count = 1}) > 0 then
+            return max(health, 10), prototypes.item[name].localised_name or {'nanobots.free-food-unknown'}
         end
     end
     return 10, {'nanobots.free-food'}
@@ -103,7 +103,7 @@ end
 local function get_best_follower_capsule(player)
     local robot_list = {}
     for _, data in ipairs(combat_robots) do
-        local count = game.item_prototypes[data.capsule] and player.get_item_count(data.capsule) or 0
+        local count = prototypes.item[data.capsule] and player.get_item_count(data.capsule) or 0
         if count > 0 then
             robot_list[#robot_list + 1] = {capsule = data.capsule, unit = data.unit, count = count, qty = data.qty, rank = data.rank}
         end
@@ -112,7 +112,7 @@ local function get_best_follower_capsule(player)
 end
 
 local function get_chip_radius(player, chip_name)
-    local pdata = global.players[player.index]
+    local pdata = storage.players[player.index]
     local c = player.character
     local max_radius = c and c.logistic_cell and c.logistic_cell.mobile and floor(c.logistic_cell.construction_radius) or 15
     local custom_radius = pdata.ranges[chip_name] or max_radius
@@ -224,7 +224,7 @@ end
 local function emergency_heal_player(player, feeders)
     local num_feeders = #feeders
     local pos = increment_position(player.character.position)
-    local max_health = player.character.prototype.max_health * .75
+    local max_health = player.character.max_health * .75
 
     while num_feeders > 0 do
         local feeder = feeders[num_feeders]
@@ -254,7 +254,7 @@ function armormods.prepare_chips(player)
         if charged['equipment-bot-chip-feeder'] then
             if #energy_shields.shields > 0 then
                 emergency_heal_shield(player, charged['equipment-bot-chip-feeder'], energy_shields)
-            elseif player.character.health < player.character.prototype.max_health * .75 then
+            elseif player.character.health < player.character.max_health * .75 then
                 emergency_heal_player(player, charged['equipment-bot-chip-feeder'])
             end
         end

@@ -10,8 +10,8 @@ local recipe = {
     enabled = false,
     energy_required = 1,
     ingredients = {
-        {'iron-stick', 1},
-        {'repair-pack', 1}
+        {type = 'item', name = 'iron-stick', amount = 1},
+        {type = 'item', name = 'repair-pack', amount = 1}
     },
     results = {
         {type = 'item', name = 'ammo-nano-constructors', amount = 1}
@@ -28,6 +28,7 @@ local constructors = {
     subgroup = 'tool',
     order = 'c[automated-construction]-g[gun-nano-emitter]-a-constructors',
     stack_size = 100,
+    ammo_category = 'nano-ammo',
     ammo_type = {
         category = 'nano-ammo',
         target_type = 'position',

@@ -60,7 +60,7 @@ update_settings()
 local _find_item = function(simple_stack, _, player, at_least_one)
     local item, count = simple_stack.name, simple_stack.count
     count = at_least_one and 1 or count
-    local prototype = game.item_prototypes[item]
+    local prototype = prototypes.item[item]
     if prototype.type ~= 'item-with-inventory' then
         if player.cheat_mode or player.get_item_count(item) >= count then
             return true
@@ -136,8 +136,8 @@ end
 --- @return LuaItemStack|nil
 --- @return string|nil
 local function get_gun_ammo_name(player, gun_name)
-    local gun_inv = player.get_inventory(defines.inventory.character_guns)
-    local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+    local gun_inv = player.character.get_inventory(defines.inventory.character_guns)
+    local ammo_inv = player.character.get_inventory(defines.inventory.character_ammo)
 
     local gun --- @type LuaItemStack
     local ammo --- @type LuaItemStack
@@ -177,7 +177,7 @@ local function insert_or_spill_items(entity, item_stacks, is_return_cheat)
         end
         for _, stack in pairs(new_stacks) do
             local name, count, health = stack.name, stack.count, stack.health or 1
-            if game.item_prototypes[name] and not game.item_prototypes[name].has_flag('hidden') then
+            if prototypes.item[name] and not prototypes.item[name].hidden then
                 local inserted = entity.insert({ name = name, count = count, health = health })
                 if inserted ~= count then
                     entity.surface.spill_item_stack(entity.position, { name = name, count = count - inserted, health = health }, true)
@@ -243,11 +243,11 @@ local function get_items_from_inv(entity, item_stack, cheat, at_least_one)
         local sources
         if entity.vehicle and entity.vehicle.train then
             sources = entity.vehicle.train.cargo_wagons
-            sources[#sources + 1] = entity
+            sources[#sources + 1] = entity.character
         elseif entity.vehicle then
-            sources = { entity.vehicle, entity }
+            sources = { entity.vehicle, entity.character }
         else
-            sources = { entity }
+            sources = { entity.character }
         end
 
         local new_item_stack = { name = item_stack.name, count = 0, health = 1 }
@@ -320,8 +320,9 @@ end
 --- @param player LuaPlayer
 --- @param nano_ammo LuaItemStack
 local function get_ammo_radius(player, nano_ammo)
-    local data = global.players[player.index]
-    local max_radius = bot_radius[player.force.get_ammo_damage_modifier(nano_ammo.prototype.get_ammo_type().category)] or 7
+    local data = storage.players[player.index]
+    local modifier = player.force.get_ammo_damage_modifier(nano_ammo.prototype.ammo_category.name)
+    local max_radius = bot_radius[modifier] or 7
     local custom_radius = data.ranges[nano_ammo.name] or max_radius
     return custom_radius <= max_radius and custom_radius or max_radius
 end
@@ -452,7 +453,7 @@ function Queue.build_entity_ghost(data)
     end
 
     create_projectile('nano-projectile-constructors', entity.surface, entity.force, player.position, entity.position)
-    entity.health = (entity.health > 0) and ((data.item_stack.health or 1) * entity.prototype.max_health)
+    entity.health = (entity.health > 0) and ((data.item_stack.health or 1) * entity.max_health)
     if insert_or_spill_items(player, insert_into_entity(entity, item_stacks)) then
         create_projectile('nano-projectile-return', surface, player.force, position, player.position)
     end
@@ -483,7 +484,7 @@ function Queue.build_tile_ghost(data)
         return insert_or_spill_items(player, { data.item_stack })
     end
 
-    local item_ptype = data.item_stack and game.item_prototypes[data.item_stack.name]
+    local item_ptype = data.item_stack and prototypes.item[data.item_stack.name]
     local tile_ptype = item_ptype and item_ptype.place_as_tile_result.result
     create_projectile('nano-projectile-constructors', surface, force, player.position, position)
     Position.floored(position)
@@ -546,7 +547,7 @@ function Queue.upgrade_ghost(data)
 
     create_projectile('nano-projectile-constructors', entity.surface, entity.force, player.position, entity.position)
     surface.play_sound { path = 'utility/build_small', position = entity.position }
-    entity.health = (entity.health > 0) and ((data.item_stack.health or 1) * entity.prototype.max_health)
+    entity.health = (entity.health > 0) and ((data.item_stack.health or 1) * entity.max_health)
 end
 
 --- @param data Nanobots.data
@@ -600,7 +601,7 @@ end
 --- @param pos MapPosition
 --- @param nano_ammo LuaItemStack
 local function queue_ghosts_in_range(player, pos, nano_ammo)
-    local pdata = global.players[player.index]
+    local pdata = storage.players[player.index]
     local force = player.force
     local _next_nano_tick = (pdata._next_nano_tick and pdata._next_nano_tick < (game.tick + 2000) and pdata._next_nano_tick) or game.tick
     local tick_spacing = max(1, cfg.queue_rate - (queue_speed[force.get_gun_speed_modifier('nano-ammo')] or queue_speed[4]))
@@ -777,7 +778,7 @@ local function poll_players(event)
     -- Run logic for nanobots and power armor modules
     -- if event.tick % math.ceil(#game.connected_players/cfg.poll_rate) == 0 then
     if event.tick % max(1, floor(cfg.poll_rate / #game.connected_players)) == 0 then
-        local last_player, player = next(game.connected_players, global._last_player)
+        local last_player, player = next(game.connected_players, storage._last_player)
         -- Establish connected, non afk, player character
         if player and is_connected_player_ready(player) then
             if cfg.nanobots_auto and (not cfg.network_limits or nano_network_check(player.character)) then
@@ -794,7 +795,7 @@ local function poll_players(event)
                 armormods.prepare_chips(player)
             end -- Auto Equipment
         end -- Player Ready
-        global._last_player = last_player
+        storage._last_player = last_player
     end -- NANO Automatic scripts
     queue:execute(event)
 end
@@ -802,28 +803,28 @@ Event.register(defines.events.on_tick, poll_players)
 
 -- Reset last player when players join or leave
 local function players_changed()
-    global._last_player = nil
+    storage._last_player = nil
 end
 Event.register({ defines.events.on_player_joined_game, defines.events.on_player_left_game }, players_changed)
 
 local function on_nano_init()
-    global.nano_queue = Queue()
-    queue = global.nano_queue
+    storage.nano_queue = Queue()
+    queue = storage.nano_queue
     game.print('Nanobots are now ready to serve')
 end
 Event.register(Event.core_events.init, on_nano_init)
 
 local function on_nano_load()
-    queue = Queue(global.nano_queue)
+    queue = Queue(storage.nano_queue)
 end
 Event.register(Event.core_events.load, on_nano_load)
 
 local function reset_nano_queue()
-    global.nano_queue = nil
+    storage.nano_queue = nil
     queue = nil
-    global.nano_queue = Queue()
-    queue = global.nano_queue
-    for _, player in pairs(global.players) do
+    storage.nano_queue = Queue()
+    queue = storage.nano_queue
+    for _, player in pairs(storage.players) do
         player._next_nano_tick = 0
     end
 end

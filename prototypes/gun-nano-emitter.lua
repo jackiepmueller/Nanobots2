@@ -4,11 +4,11 @@ local recipe_nano_gun = {
     enabled = false,
     energy_required = 30,
     ingredients = {
-        {'copper-plate', 5},
-        {'iron-plate', 10},
-        {'electronic-circuit', 2}
+        {type = 'item', name = 'copper-plate', amount = 5},
+        {type = 'item', name = 'iron-plate', amount = 10},
+        {type = 'item', name = 'electronic-circuit', amount = 2}
     },
-    result = 'gun-nano-emitter'
+    results = {{type = 'item', name='gun-nano-emitter', amount = 1}}
 }
 
 local item_nano_gun = {
