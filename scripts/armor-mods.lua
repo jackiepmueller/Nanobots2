@@ -123,7 +123,7 @@ end
 --At this point player is valid, not afk and has a character
 local function get_chip_results(player, equipment, eq_name, search_type, bot_counter)
     local radius = get_chip_radius(player, eq_name)
-    local area = Position.expand_to_area(player.position, radius)
+    local area = Position.expand_to_area(player.character.position, radius)
     local item_entities = equipment and bot_counter(0) > 0 and player.surface.find_entities_filtered {area = area, type = search_type, limit = 200}
     local num_items = item_entities and #item_entities or 0
     local num_chips = item_entities and #equipment or 0
@@ -149,7 +149,7 @@ end
 --Mark items for deconstruction if player has roboport
 local function process_ready_chips(player, equipment)
     local rad = player.character.logistic_cell.construction_radius
-    local enemy = player.surface.find_nearest_enemy {position = player.position, max_distance = rad + 10, force = player.force}
+    local enemy = player.surface.find_nearest_enemy {position = player.character.position, max_distance = rad + 10, force = player.force}
     if not enemy and (equipment['equipment-bot-chip-items'] or equipment['equipment-bot-chip-trees']) then
         local bots_available = get_bot_counts(player.character)
         if bots_available > 0 then
@@ -178,7 +178,7 @@ local function process_ready_chips(player, equipment)
                 local launcher = launchers[num_launchers]
                 while capsule and existing < (max_bots - capsule.qty) and launcher and launcher.energy >= 500 do
                     if player.remove_item({name = capsule.capsule, count = 1}) == 1 then
-                        player.surface.create_entity {name = capsule.unit, position = player.position, force = player.force, target = player.character}
+                        player.surface.create_entity {name = capsule.unit, position = player.character.position, force = player.force, target = player.character}
                         launcher.energy = launcher.energy - 500
                         capsule.count = capsule.count - 1
                         existing = existing + capsule.qty
@@ -196,7 +196,7 @@ end
 
 local function emergency_heal_shield(player, feeders, energy_shields)
     local num_feeders = #feeders
-    local pos = increment_position(player.position)
+    local pos = increment_position(player.character.position)
     --Only run if we have less than max shield, Feeder max energy is 480
     for _, shield in pairs(energy_shields.shields) do
         while num_feeders > 0 do
