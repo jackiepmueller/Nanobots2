@@ -19,7 +19,7 @@ Data {
     name = 'equipment-bot-chip-launcher',
     icon = '__Nanobots2__/graphics/icons/equipment-bot-chip-launcher.png',
     icon_size = 64,
-    placed_as_equipment_result = 'equipment-bot-chip-launcher',
+    place_as_equipment_result = 'equipment-bot-chip-launcher',
     subgroup = 'equipment',
     order = 'e[robotics]-ac[personal-roboport-equipment]',
     stack_size = 20

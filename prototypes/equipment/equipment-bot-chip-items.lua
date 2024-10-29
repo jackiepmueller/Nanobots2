@@ -19,7 +19,7 @@ Data {
     name = 'equipment-bot-chip-items',
     icon = '__Nanobots2__/graphics/icons/equipment-bot-chip-items.png',
     icon_size = 64,
-    placed_as_equipment_result = 'equipment-bot-chip-items',
+    place_as_equipment_result = 'equipment-bot-chip-items',
     subgroup = 'equipment',
     order = 'e[robotics]-ab[personal-roboport-equipment]',
     stack_size = 20

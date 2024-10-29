@@ -19,7 +19,7 @@ Data {
     name = 'equipment-bot-chip-feeder',
     icon = '__Nanobots2__/graphics/icons/equipment-bot-chip-feeder.png',
     icon_size = 64,
-    placed_as_equipment_result = 'equipment-bot-chip-feeder',
+    place_as_equipment_result = 'equipment-bot-chip-feeder',
     subgroup = 'equipment',
     order = 'e[robotics]-ae[personal-roboport-equipment]',
     stack_size = 20
