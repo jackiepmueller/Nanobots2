@@ -1,6 +1,6 @@
 local function technology_icon_constant_range()
     local icons = {
-        {icon = '__Nanobots__/graphics/technology/tech-nano-range.png', icon_size = 256, icon_mipmaps = 1},
+        {icon = '__Nanobots2__/graphics/technology/tech-nano-range.png', icon_size = 256, icon_mipmaps = 1},
         {
             icon = '__core__/graphics/icons/technology/constants/constant-range.png',
             icon_size = 128,

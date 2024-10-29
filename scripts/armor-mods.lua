@@ -2,7 +2,7 @@
 --[[armormods]] -- Power Armor module code.
 -------------------------------------------------------------------------------
 local armormods = {}
-local table = require('__stdlib__/stdlib/utils/table')
+local table = require('__stdlib2__/stdlib/utils/table')
 
 local config = require('config')
 
@@ -11,7 +11,7 @@ local config = require('config')
 local combat_robots = config.COMBAT_ROBOTS
 local healer_capsules = config.FOOD
 
-local Position = require('__stdlib__/stdlib/area/position')
+local Position = require('__stdlib2__/stdlib/area/position')
 local max, abs, ceil, floor = math.max, math.abs, math.ceil, math.floor
 
 --(( Helper functions ))-------------------------------------------------------

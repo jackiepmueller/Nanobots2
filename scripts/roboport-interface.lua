@@ -1,9 +1,9 @@
 -------------------------------------------------------------------------------
 --[[roboport-interface]]
 -------------------------------------------------------------------------------
-local Event = require('__stdlib__/stdlib/event/event')
-local Position = require('__stdlib__/stdlib/area/position')
-local table = require('__stdlib__/stdlib/utils/table')
+local Event = require('__stdlib2__/stdlib/event/event')
+local Position = require('__stdlib2__/stdlib/area/position')
+local table = require('__stdlib2__/stdlib/utils/table')
 local Queue = require('scripts/hash_queue')
 local queue
 

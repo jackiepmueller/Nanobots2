@@ -1,4 +1,4 @@
-local Recipe = require('__stdlib__/stdlib/data/recipe')
+local Recipe = require('__stdlib2__/stdlib/data/recipe')
 
 require('prototypes/technology/shortcuts')
 
