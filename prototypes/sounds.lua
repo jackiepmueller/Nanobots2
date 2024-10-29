@@ -1,4 +1,4 @@
-local Data = require('__stdlib__/stdlib/data/data')
+local Data = require('__stdlib2__/stdlib/data/data')
 
 Data{
     type = 'sound',

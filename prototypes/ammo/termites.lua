@@ -20,7 +20,7 @@ local recipe = {
 local termites = {
     type = 'ammo',
     name = 'ammo-nano-termites',
-    icon = '__Nanobots__/graphics/icons/nano-ammo-termites.png',
+    icon = '__Nanobots2__/graphics/icons/nano-ammo-termites.png',
     icon_size = 64,
     magazine_size = 20, --20
     subgroup = 'tool',
@@ -69,7 +69,7 @@ local cloud_big_termites = {
                 {
                     type = 'play-sound',
                     sound = {
-                        filename = '__Nanobots__/sounds/robostep.ogg',
+                        filename = '__Nanobots2__/sounds/robostep.ogg',
                         volume = 0.75
                     }
                 }
@@ -115,7 +115,7 @@ local cloud_small_termites = {
                                 {   type = 'play-sound',
                                     play_on_target_position = true,
                                     sound = {
-                                        filename = '__Nanobots__/sounds/sawing-wood.ogg',
+                                        filename = '__Nanobots2__/sounds/sawing-wood.ogg',
                                         volume = 0.15,
                                         aggregation = {max_count = 1, remove = true, count_already_playing = true}
                                     }

@@ -1,8 +1,8 @@
-local Event = require('__stdlib__/stdlib/event/event').set_protected_mode(true)
-local Area = require('__stdlib__/stdlib/area/area')
-local Position = require('__stdlib__/stdlib/area/position')
-local table = require('__stdlib__/stdlib/utils/table')
-local time = require('__stdlib__/stdlib/utils/defines/time')
+local Event = require('__stdlib2__/stdlib/event/event').set_protected_mode(true)
+local Area = require('__stdlib2__/stdlib/area/area')
+local Position = require('__stdlib2__/stdlib/area/position')
+local table = require('__stdlib2__/stdlib/utils/table')
+local time = require('__stdlib2__/stdlib/utils/defines/time')
 local Queue = require('scripts/hash_queue')
 local queue
 local cfg

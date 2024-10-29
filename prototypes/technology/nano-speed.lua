@@ -1,6 +1,6 @@
 local function technology_icon_constant_movement_speed()
     local icons = {
-        {icon = '__Nanobots__/graphics/technology/tech-nano-speed.png', icon_size = 256, icon_mipmaps = 1},
+        {icon = '__Nanobots2__/graphics/technology/tech-nano-speed.png', icon_size = 256, icon_mipmaps = 1},
         {
             icon = '__core__/graphics/icons/technology/constants/constant-movement-speed.png',
             icon_size = 128,
