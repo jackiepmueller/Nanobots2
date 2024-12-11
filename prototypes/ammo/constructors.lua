@@ -257,3 +257,4 @@ data:extend {
 
 local effects = data.raw.technology['nanobots'].effects
 effects[#effects + 1] = {type = 'unlock-recipe', recipe = 'ammo-nano-constructors'}
+effects[#effects + 1] = {type = 'unlock-recipe', recipe = 'iron-stick'}
