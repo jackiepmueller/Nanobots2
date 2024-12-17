@@ -180,7 +180,7 @@ local function insert_or_spill_items(entity, item_stacks, is_return_cheat)
             if prototypes.item[name] and not prototypes.item[name].hidden then
                 local inserted = entity.insert({ name = name, count = count, health = health })
                 if inserted ~= count then
-                    entity.surface.spill_item_stack(entity.position, { name = name, count = count - inserted, health = health }, true)
+                    entity.surface.spill_item_stack({position=entity.position, stack={ name = name, count = count - inserted, health = health }, enable_looted=true})
                 end
             end
         end
