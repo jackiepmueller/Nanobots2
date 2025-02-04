@@ -30,7 +30,12 @@ local tech2 = {
     name = 'nanobots-cliff',
     icon = '__Nanobots2__/graphics/technology/tech-nanobots-cliff.png',
     icon_size = 256,
-    effects = {},
+    effects = {
+        {
+            type = "cliff-deconstruction-enabled",
+            modifier = true
+        }
+    },
     prerequisites = {'nanobots'},
     unit = {
         count = 200,
