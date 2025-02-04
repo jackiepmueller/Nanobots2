@@ -8,6 +8,10 @@ local tech1 = {
 --            type = "ghost-time-to-live",
 --            modifier = 60 * 60 * 60 * 24 * 7
 --        }
+        {
+            type = "unlock-recipe",
+            recipe = "iron-stick"
+        }
     },
     prerequisites = {'logistics'},
     unit = {
