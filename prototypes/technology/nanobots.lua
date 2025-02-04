@@ -13,7 +13,7 @@ local tech1 = {
             recipe = "iron-stick"
         }
     },
-    prerequisites = {'logistics'},
+    prerequisites = {'logistics', 'repair-pack'},
     unit = {
         count = 30,
         ingredients = {
