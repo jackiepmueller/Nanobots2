@@ -1,8 +1,8 @@
-local Event = require('__stdlib__/stdlib/event/event').set_protected_mode(true)
-local Area = require('__stdlib__/stdlib/area/area')
-local Position = require('__stdlib__/stdlib/area/position')
-local table = require('__stdlib__/stdlib/utils/table')
-local time = require('__stdlib__/stdlib/utils/defines/time')
+local Event = require('__stdlib2__/stdlib/event/event').set_protected_mode(true)
+local Area = require('__stdlib2__/stdlib/area/area')
+local Position = require('__stdlib2__/stdlib/area/position')
+local table = require('__stdlib2__/stdlib/utils/table')
+local time = require('__stdlib2__/stdlib/utils/defines/time')
 local Queue = require('scripts/hash_queue')
 local queue
 local cfg
@@ -81,10 +81,9 @@ end
 
 local function has_powered_equipment(character, eq_name)
     local grid = character.grid
-    if grid and grid.get_contents()[eq_name] then
-        return table_find(grid.equipment, function(v)
-            return v.name == eq_name and v.energy > 0
-        end)
+    if grid then
+        eq = grid.find(eq_name)
+        return eq and eq.energy > 0
     end
 end
 
@@ -382,7 +381,7 @@ function Queue.cliff_deconstruction(data)
         return insert_or_spill_items(player, { data.item_stack })
     end
 
-    create_projectile('nano-projectile-deconstructors', entity.surface, entity.force, player.position, entity.position)
+    create_projectile('nano-projectile-deconstructors', entity.surface, entity.force, player.character.position, entity.position)
     local exp_name = data.item_stack.name == 'artillery-shell' and 'big-artillery-explosion' or 'big-explosion'
     entity.surface.create_entity { name = exp_name, position = entity.position }
     entity.destroy({ do_cliff_correction = true, raise_destroy = true })
@@ -403,7 +402,7 @@ function Queue.deconstruction(data)
 
     local surface = data.surface or entity.surface
     local force =  entity.force
-    local ppos = player.position
+    local ppos = player.character.position
     local epos = entity.position
 
     create_projectile('nano-projectile-deconstructors', surface, force, ppos, epos)
@@ -447,15 +446,15 @@ function Queue.build_entity_ghost(data)
 
     if not entity then
         if insert_or_spill_items(player, item_stacks, player.cheat_mode) then
-            create_projectile('nano-projectile-return', surface, player.force, position, player.position)
+            create_projectile('nano-projectile-return', surface, player.force, position, player.character.position)
         end
         return
     end
 
-    create_projectile('nano-projectile-constructors', entity.surface, entity.force, player.position, entity.position)
+    create_projectile('nano-projectile-constructors', entity.surface, entity.force, player.character.position, entity.position)
     entity.health = (entity.health > 0) and ((data.item_stack.health or 1) * entity.max_health)
     if insert_or_spill_items(player, insert_into_entity(entity, item_stacks)) then
-        create_projectile('nano-projectile-return', surface, player.force, position, player.position)
+        create_projectile('nano-projectile-return', surface, player.force, position, player.character.position)
     end
     if requests then
         satisfy_requests(requests, entity, player)
@@ -486,12 +485,12 @@ function Queue.build_tile_ghost(data)
 
     local item_ptype = data.item_stack and prototypes.item[data.item_stack.name]
     local tile_ptype = item_ptype and item_ptype.place_as_tile_result.result
-    create_projectile('nano-projectile-constructors', surface, force, player.position, position)
+    create_projectile('nano-projectile-constructors', surface, force, player.character.position, position)
     Position.floored(position)
     -- if the tile was mined, we need to manually place the tile.
     -- checking if the ghost was revived is likely unnecessary but felt safer.
     if tile_was_mined and not ghost_was_revived then
-        create_projectile('nano-projectile-return', surface, force, position, player.position)
+        create_projectile('nano-projectile-return', surface, force, position, player.character.position)
         surface.set_tiles({ { name = tile_ptype.name, position = position } }, true, true, false, true)
     end
 
@@ -513,7 +512,7 @@ function Queue.upgrade_direction(data)
 
     ghost.direction = data.direction
     ghost.cancel_upgrade(player.force, player)
-    create_projectile('nano-projectile-constructors', ghost.surface, ghost.force, player.position, ghost.position)
+    create_projectile('nano-projectile-constructors', ghost.surface, ghost.force, player.character.position, ghost.position)
     surface.play_sound { path = 'utility/build_small', position = ghost.position }
 end
 
@@ -545,7 +544,7 @@ function Queue.upgrade_ghost(data)
         return insert_or_spill_items(player, { data.item_stack })
     end
 
-    create_projectile('nano-projectile-constructors', entity.surface, entity.force, player.position, entity.position)
+    create_projectile('nano-projectile-constructors', entity.surface, entity.force, player.character.position, entity.position)
     surface.play_sound { path = 'utility/build_small', position = entity.position }
     entity.health = (entity.health > 0) and ((data.item_stack.health or 1) * entity.max_health)
 end
@@ -567,7 +566,7 @@ function Queue.item_requests(data)
         return insert_or_spill_items(player, { data.item_stack })
     end
 
-    create_projectile('nano-projectile-constructors', proxy.surface, proxy.force, player.position, proxy.position)
+    create_projectile('nano-projectile-constructors', proxy.surface, proxy.force, player.character.position, proxy.position)
     local item_stack = data.item_stack
     local requests = proxy.item_requests
     local inserted = target.insert(item_stack)
@@ -709,7 +708,7 @@ local function queue_ghosts_in_range(player, pos, nano_ammo)
                                 if ghost.surface.count_entities_filtered { name = 'nano-cloud-small-repair', position = ghost.position } == 0 then
                                     ghost.surface.create_entity {
                                         name = 'nano-projectile-repair',
-                                        position = player.position,
+                                        position = player.character.position,
                                         force = force,
                                         target = ghost.position,
                                         speed = 0.5
@@ -761,7 +760,7 @@ local function everyone_hates_trees(player, pos, nano_ammo)
                 local tree_area = Area.expand(stupid_tree.bounding_box, .5)
                 if player.surface.count_entities_filtered { area = tree_area, name = 'nano-cloud-small-termites' } == 0 then
                     player.surface
-                        .create_entity { name = 'nano-projectile-termites', position = player.position, force = force, target = stupid_tree, speed = .5 }
+                        .create_entity { name = 'nano-projectile-termites', position = player.character.position, force = force, target = stupid_tree, speed = .5 }
                     ammo_drain(player, nano_ammo, 1)
                 end
             end
@@ -785,9 +784,9 @@ local function poll_players(event)
                 local gun, nano_ammo, ammo_name = get_gun_ammo_name(player, 'gun-nano-emitter')
                 if gun then
                     if ammo_name == 'ammo-nano-constructors' then
-                        queue_ghosts_in_range(player, player.position, nano_ammo)
+                        queue_ghosts_in_range(player, player.character.position, nano_ammo)
                     elseif ammo_name == 'ammo-nano-termites' then
-                        everyone_hates_trees(player, player.position, nano_ammo)
+                        everyone_hates_trees(player, player.character.position, nano_ammo)
                     end
                 end -- Gun and Ammo check
             end

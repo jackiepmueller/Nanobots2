@@ -1,15 +1,19 @@
 local tech1 = {
     type = 'technology',
     name = 'nanobots',
-    icon = '__Nanobots__/graphics/technology/tech-nanobots.png',
+    icon = '__Nanobots2__/graphics/technology/tech-nanobots.png',
     icon_size = 254,
     effects = {
 --        {
 --            type = "ghost-time-to-live",
 --            modifier = 60 * 60 * 60 * 24 * 7
 --        }
+        {
+            type = "unlock-recipe",
+            recipe = "iron-stick"
+        }
     },
-    prerequisites = {'logistics'},
+    prerequisites = {'logistics', 'repair-pack'},
     unit = {
         count = 30,
         ingredients = {
@@ -24,9 +28,14 @@ data:extend {tech1}
 local tech2 = {
     type = 'technology',
     name = 'nanobots-cliff',
-    icon = '__Nanobots__/graphics/technology/tech-nanobots-cliff.png',
+    icon = '__Nanobots2__/graphics/technology/tech-nanobots-cliff.png',
     icon_size = 256,
-    effects = {},
+    effects = {
+        {
+            type = "cliff-deconstruction-enabled",
+            modifier = true
+        }
+    },
     prerequisites = {'nanobots'},
     unit = {
         count = 200,

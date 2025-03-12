@@ -1,4 +1,4 @@
-local Player = require('__stdlib__/stdlib/event/player')
+local Player = require('__stdlib2__/stdlib/event/player')
 local Pad = prequire('__PickerAtheneum__/utils/adjustment-pad', true)
 local config = require('config')
 

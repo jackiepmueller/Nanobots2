@@ -1,4 +1,4 @@
-local Data = require('__stdlib__/stdlib/data/data')
+local Data = require('__stdlib2__/stdlib/data/data')
 local make_shortcut = require('prototypes/equipment/make_shortcut')
 
 Data {
@@ -17,9 +17,9 @@ Data {
 Data {
     type = 'item',
     name = 'equipment-bot-chip-trees',
-    icon = '__Nanobots__/graphics/icons/equipment-bot-chip-trees.png',
+    icon = '__Nanobots2__/graphics/icons/equipment-bot-chip-trees.png',
     icon_size = 64,
-    placed_as_equipment_result = 'equipment-bot-chip-trees',
+    place_as_equipment_result = 'equipment-bot-chip-trees',
     subgroup = 'equipment',
     order = 'e[robotics]-ad[personal-roboport-equipment]',
     stack_size = 20
@@ -31,7 +31,7 @@ local equipment_chip =
     name = 'equipment-bot-chip-trees',
     take_result = 'equipment-bot-chip-trees',
     sprite = {
-        filename = '__Nanobots__/graphics/equipment/equipment-bot-chip-trees.png',
+        filename = '__Nanobots2__/graphics/equipment/equipment-bot-chip-trees.png',
         width = 64,
         height = 64,
         priority = 'medium',
