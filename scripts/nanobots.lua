@@ -58,7 +58,7 @@ update_settings()
 --- @param at_least_one boolean
 --- @return boolean
 local _find_item = function(simple_stack, _, player, at_least_one)
-    local item, count = simple_stack.name, simple_stack.count
+    local item, count, quality = simple_stack.name, simple_stack.count, simple_stack.quality
     count = at_least_one and 1 or count
     local prototype = prototypes.item[item]
     if prototype.type ~= 'item-with-inventory' then
@@ -70,6 +70,7 @@ local _find_item = function(simple_stack, _, player, at_least_one)
             return vehicle and ((vehicle.get_item_count(item) >= count) or (train and train.get_item_count(item) >= count))
         end
     end
+    return false
 end
 
 --- Is the player connected, not afk, and have an attached character
@@ -179,7 +180,7 @@ local function insert_or_spill_items(entity, item_stacks, is_return_cheat)
             if prototypes.item[name] and not prototypes.item[name].hidden then
                 local inserted = entity.insert({ name = name, count = count, health = health })
                 if inserted ~= count then
-                    entity.surface.spill_item_stack(entity.position, { name = name, count = count - inserted, health = health }, true)
+                    entity.surface.spill_item_stack{position=entity.position, stack={ name = name, count = count - inserted, health = health }, enable_looted=true}
                 end
             end
         end
@@ -331,19 +332,9 @@ end
 --- @param entity LuaEntity the entity to satisfy requests for
 --- @param player LuaEntity the entity to get modules from
 local function satisfy_requests(requests, entity, player)
-    local pinv = player.get_main_inventory()
-    local new_requests = {}
-    for name, count in pairs(requests.item_requests) do
-        if count > 0 and entity.can_insert(name) then
-            local removed = player.cheat_mode and count or pinv.remove({ name = name, count = count })
-            local inserted = removed > 0 and entity.insert({ name = name, count = removed }) or 0
-            local balance = count - inserted
-            new_requests[name] = balance > 0 and balance or nil
-        else
-            new_requests[name] = count
-        end
+    for k, item in pairs(requests.item_requests) do
+        requests.insert_plan = satisfy_insert_plan(entity, requests, item, player)
     end
-    requests.item_requests = new_requests
 end
 
 --- Create a projectile from source to target
@@ -549,6 +540,89 @@ function Queue.upgrade_ghost(data)
     entity.health = (entity.health > 0) and ((data.item_stack.health or 1) * entity.max_health)
 end
 
+function satisfy_insert_plan(target, proxy, item_stack, player)
+    -- Copy the plan and prepare player inventory for later
+    local insert_plan_copy = proxy.insert_plan
+    local pinv = player.get_main_inventory()
+
+    -- How many entries were removed from the insert plan? We need to adjust the indexing appropiately
+    local removed_offset_plan = 0
+
+    -- Iterate all insert plans and satisfy as many as possible
+    for k, plan in pairs(proxy.insert_plan) do
+        -- Plan item Identifier
+        local id = plan.id
+        -- Where should these items go?
+        local items = plan.items
+
+        -- We can no longer insert, cease
+        if item_stack.count <= 0 then
+            break
+        end
+        
+        -- Quality is a mess. It's either a string, or an object, or nil, and the object can also be nil... this just always grabs the string.
+        -- TODO: Check if this breaks with Quality name changing mods
+        local id_qual = (id.quality == nil and "normal") or (type(id.quality) == "string" and id.quality) or (not id.quality.valid and "normal") or (id.name)
+        local stack_qual = (item_stack.quality == nil and "normal") or (type(item_stack.quality) == "string" and item_stack.quality) or (not item_stack.quality.valid and "normal") or (item_stack.name)
+
+        -- Stack name and quality matches, try to insert
+        if id.name == item_stack.name and id_qual == stack_qual then
+            -- Slot positions we expect items at, insert there
+            local expected_slots = items.in_inventory
+            -- Need to adujst indices again if we remove any entries
+            local removed_offset_inv = 0
+            for _, slot in pairs(expected_slots) do
+                -- No more Items, leave
+                if item_stack.count <= 0 then
+                    break
+                end
+
+                -- First try to find the target inventory, if given
+                -- Also, stack is 0 indexed, but the actual lua table is not so we have to use slot.stack+1
+                local inv_item = nil
+                if slot.inventory ~= nil then
+                    inv_item = target.get_inventory(slot.inventory)[slot.stack+1]
+                else
+                    inv_item = target[slot.stack+1]
+                end
+
+                -- How many items we removed from the player (up to item_stack.count)
+                -- Also make sure we do not remove more than the slot wants that would be silly.
+                local change_count = player.cheat_mode and item_stack.count or pinv.remove({ name = item_stack.name, count = math.min(slot.count or 1, item_stack.count), quality = item_stack.quality })
+                -- No item removed, no point in running rest of code
+                if change_count > 0 then
+                    -- Create new stack with the attributes & count of what we just removed
+                    local stack_to_use = {name = item_stack.name, count = change_count, quality = item_stack.quality}
+
+                    -- If there is no item there, forcefully set it, else try to transfer to the slot
+                    if (inv_item.count == 0 and inv_item.set_stack(stack_to_use)) or inv_item.transfer_stack(stack_to_use) then
+                        -- Adjust our item count to what we just removed from player
+                        item_stack.count = item_stack.count - change_count
+
+                        -- Adjust insert plan copy to remove the pending requests
+                        insert_plan_copy[k-removed_offset_plan].items.in_inventory[_-removed_offset_inv].count = (slot.count or 1) - change_count
+                        -- If we remove all items, remove this entry from the table
+                        if insert_plan_copy[k-removed_offset_plan].items.in_inventory[_-removed_offset_inv].count == 0 then
+                            table.remove(insert_plan_copy[k-removed_offset_plan].items.in_inventory, _-removed_offset_inv)
+                            removed_offset_inv = removed_offset_inv + 1
+                            -- If we remove all requests, delete this entry from the plan so we stop requesting this at all
+                            if #insert_plan_copy[k-removed_offset_plan].items.in_inventory == 0 then
+                                table.remove(insert_plan_copy, k-removed_offset_plan)
+                                removed_offset_plan = removed_offset_plan + 1
+                            end
+                        end
+                    -- Failed to insert, undo player remove
+                    else
+                        pinv.insert(stack_to_use)
+                    end
+                end
+            end
+        end
+    end
+    -- New plan to use
+    return insert_plan_copy
+end
+
 --- @param data Nanobots.data
 function Queue.item_requests(data)
     local proxy = data.entity
@@ -568,26 +642,7 @@ function Queue.item_requests(data)
 
     create_projectile('nano-projectile-constructors', proxy.surface, proxy.force, player.character.position, proxy.position)
     local item_stack = data.item_stack
-    local requests = proxy.item_requests
-    local inserted = target.insert(item_stack)
-    item_stack.count = item_stack.count - inserted
-
-    if item_stack.count > 0 then
-        insert_or_spill_items(player, { item_stack })
-    end
-
-    requests[item_stack.name] = requests[item_stack.name] - inserted
-    for k, count in pairs(requests) do
-        if count == 0 then
-            requests[k] = nil
-        end
-    end
-
-    if table_size(requests) > 0 then
-        proxy.item_requests = requests
-    else
-        proxy.destroy()
-    end
+    proxy.insert_plan = satisfy_insert_plan(target, proxy, item_stack, player)
 end
 
 --[[ Nano Emmitter --]]
@@ -718,8 +773,8 @@ local function queue_ghosts_in_range(player, pos, nano_ammo)
                                 end -- repair
                             elseif ghost.name == 'item-request-proxy' and cfg.do_proxies then
                                 local items = {}
-                                for item, count in pairs(ghost.item_requests) do
-                                    items[#items + 1] = { name = item, count = count }
+                                for k, item in pairs(ghost.item_requests) do
+                                    items[#items + 1] = { name = item.name, count = item.count, quality = item.quality }
                                 end
                                 local item_stack = table_find(items, _find_item, player, true)
                                 if item_stack then
