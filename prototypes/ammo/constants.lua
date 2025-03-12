@@ -41,7 +41,7 @@ constants.projectile_animation = {
 function constants.cloud_animation(scale)
     scale = scale or .4
     return {
-        filename = '__base__/graphics/entity/cloud/cloud-45-frames.png',
+        filename = '__Nanobots2__/graphics/entity/cloud/cloud-45-frames.png',
         --flags = {'compressed'},
         priority = 'low',
         width = 256,
